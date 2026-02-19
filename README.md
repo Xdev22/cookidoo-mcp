@@ -1,8 +1,10 @@
-# MCP Cookidoo Thermomix
+# Cookidoo MCP
 
 MCP Server to import any web recipe as a Thermomix recipe on your Cookidoo account.
 
 Supports **200+ recipe sites** in French and English (Marmiton, 750g, AllRecipes, BBC Good Food, Food Network, etc.).
+
+Recipes are converted with **Cookidoo annotations** (TTS cooking parameters + ingredient links) based on official Thermomix values.
 
 ## Quick setup
 
@@ -11,7 +13,7 @@ Supports **200+ recipe sites** in French and English (Marmiton, 750g, AllRecipes
 Run this single command in your terminal:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/Xdev22/mcp-cookidoo-thermomix/main/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/Xdev22/cookidoo-mcp/main/install.sh)
 ```
 
 The wizard will guide you through:
@@ -34,7 +36,7 @@ pip install mcp-cookidoo-thermomix
 Or for development:
 
 ```bash
-git clone https://github.com/Xdev22/mcp-cookidoo-thermomix.git
+git clone https://github.com/Xdev22/cookidoo-mcp.git
 cd mcp-cookidoo-thermomix
 pip install -e .
 ```

@@ -28,9 +28,9 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/Xdev22/mcp-cookidoo-thermomix"
-Repository = "https://github.com/Xdev22/mcp-cookidoo-thermomix"
-Issues = "https://github.com/Xdev22/mcp-cookidoo-thermomix/issues"
+Homepage = "https://github.com/Xdev22/cookidoo-mcp"
+Repository = "https://github.com/Xdev22/cookidoo-mcp"
+Issues = "https://github.com/Xdev22/cookidoo-mcp/issues"
 
 [project.scripts]
 mcp-cookidoo-thermomix = "src.server:main"
