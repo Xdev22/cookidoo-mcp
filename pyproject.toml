@@ -1,0 +1,44 @@
+[project]
+name = "mcp-cookidoo-thermomix"
+version = "0.1.0"
+description = "MCP Server to import web recipes as Thermomix recipes on Cookidoo"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+authors = [
+    { name = "Xdev22" },
+]
+keywords = ["mcp", "thermomix", "cookidoo", "recipe", "cooking"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Home Automation",
+]
+dependencies = [
+    "fastmcp>=2.0.0",
+    "cookidoo-api>=0.12.0",
+    "recipe-scrapers>=15.0.0",
+    "aiohttp>=3.9.0",
+    "pydantic>=2.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/Xdev22/mcp-cookidoo-thermomix"
+Repository = "https://github.com/Xdev22/mcp-cookidoo-thermomix"
+Issues = "https://github.com/Xdev22/mcp-cookidoo-thermomix/issues"
+
+[project.scripts]
+mcp-cookidoo-thermomix = "src.server:main"
+mcp-cookidoo-setup = "src.setup:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
