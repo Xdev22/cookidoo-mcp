@@ -37,6 +37,44 @@ def _strip_accents(text: str) -> str:
     return "".join(c for c in nfkd if unicodedata.category(c) != "Mn")
 
 
+# Matches TTS patterns: "5 sec/vitesse 5", "2 min/120°C/vitesse 1", "100°C/speed 1"
+_TTS_TEXT_RE = re.compile(
+    r"\s*\.?\s*"
+    r"(?:\d+\s*(?:sec|min|s)\s*/\s*)?"
+    r"(?:\d+\s*°C\s*/\s*)?"
+    r"(?:vitesse|speed)\s*[\d.]+"
+    r"\s*\.?\s*",
+    re.IGNORECASE,
+)
+
+# Matches old-format TTS in parentheses: "(100°C, speed 1)", "(30 s, speed 3)"
+_OLD_TTS_RE = re.compile(
+    r"\s*\([^)]*(?:speed|vitesse)\s*[\d.]+[^)]*\)\s*",
+    re.IGNORECASE,
+)
+
+
+def _clean_description(text: str) -> str:
+    """Clean step description: strip TTS params and normalize wording."""
+    text = _OLD_TTS_RE.sub(" ", text)
+    text = _TTS_TEXT_RE.sub(" ", text)
+    # "dans le Thermomix" / "au Thermomix" → "dans le bol"
+    text = re.sub(r"(?:dans|au)\s+(?:le\s+)?thermomix", "dans le bol", text, flags=re.IGNORECASE)
+    # "la spatule du Thermomix" → "la spatule"
+    text = re.sub(r"du\s+thermomix", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\s+", " ", text).strip()
+    text = re.sub(r"\.\s*\.$", ".", text)
+    return text
+
+
+def _parse_speed_from_text(text: str) -> int | None:
+    """Extract a Thermomix speed from free text (e.g. 'vitesse 5')."""
+    match = re.search(r"(?:vitesse|speed)\s*([\d.]+)", text, re.IGNORECASE)
+    if match:
+        return max(1, round(float(match.group(1))))
+    return None
+
+
 def _parse_duration_from_text(text: str) -> int | None:
     """Extract a duration in seconds from free text.
 
@@ -138,6 +176,50 @@ def _build_tts_annotation_from_step(
     )
 
 
+_QTY_START = r"[\d¼½¾⅓⅔][\d/.,¼½¾⅓⅔]*\s*"
+
+
+def _french_article(name: str) -> str:
+    """Return the French article + lowercased name."""
+    low = name[0].lower() + name[1:] if name else name
+    vowels = "aeiouyàâéèêëïîôùûüh"
+    if low and low[0] in vowels:
+        return "l'" + low
+    return "le " + low
+
+
+def _strip_ingredient_quantities(
+    text: str, ingredients: list["Ingredient"], locale: str = "fr"
+) -> str:
+    """Replace ingredient quantities in step text with articles.
+
+    Transforms '200 grammes de boulgour' into 'le boulgour',
+    '20 grammes d'huile d'olive' into "l'huile d'olive", etc.
+    """
+    # Sort by name length (longest first) to avoid partial matches
+    sorted_ings = sorted(ingredients, key=lambda i: len(i.name), reverse=True)
+
+    for ing in sorted_ings:
+        if not ing.name:
+            continue
+        name_escaped = re.escape(ing.name)
+        # Match: "qty unit de/d' name" or "qty name"
+        pattern = (
+            _QTY_START
+            + r"(?:" + UNITS_PATTERN + r")?\s*"
+            + r"(?:de\s+|d['']\s*)?"
+            + name_escaped
+        )
+        if locale.startswith("fr"):
+            replacement = _french_article(ing.name)
+        else:
+            low = ing.name[0].lower() + ing.name[1:]
+            replacement = low
+        text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
+
+    return text
+
+
 def _find_ingredient_mentions(
     step_text: str, ingredients: list["Ingredient"]
 ) -> list[IngredientAnnotation]:
@@ -227,8 +309,12 @@ def convert_step(step_text: str, locale: str = "fr") -> ThermomixStep:
     if text_duration:
         duration = text_duration
 
+    text_speed = _parse_speed_from_text(step_text)
+    if text_speed is not None:
+        speed = text_speed
+
     step = ThermomixStep(
-        description=step_text,
+        description=_clean_description(step_text),
         duration_seconds=duration,
         temperature=temperature,
         speed=speed,
@@ -389,8 +475,11 @@ def convert_recipe(scraped: ScrapedRecipe, locale: str = "fr") -> ThermomixRecip
     ingredients = [parse_ingredient(ing) for ing in scraped.ingredients]
     steps = [convert_step(step, locale) for step in scraped.instructions]
 
-    # Link ingredients to steps via annotations
+    # Strip ingredient quantities from step descriptions and link annotations
     for step in steps:
+        step.description = _strip_ingredient_quantities(
+            step.description, ingredients, locale
+        )
         step_text = step.to_text(locale)
         ing_annotations = _find_ingredient_mentions(step_text, ingredients)
         step.ingredient_annotations = ing_annotations

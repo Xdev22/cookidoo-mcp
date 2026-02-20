@@ -26,7 +26,8 @@ if command -v mcp-cookidoo-setup &> /dev/null; then
 else
     echo ""
     echo "Installing mcp-cookidoo-thermomix..."
-    uv pip install --system "$SCRIPT_DIR"
+    uv tool install "$SCRIPT_DIR"
+    export PATH="$HOME/.local/bin:$PATH"
 fi
 
 echo ""

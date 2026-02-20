@@ -21,7 +21,15 @@ mcp = FastMCP(
         "IMPORTANT: When displaying ingredients, format them like Cookidoo does:\n"
         "- FR: quantity + unit + 'de/d'' + name (e.g. '200 g de farine', '20 g d'huile')\n"
         "- EN: quantity + unit + name (e.g. '200 g flour', '1 tbsp olive oil')\n"
-        "- If a range is available, show both (e.g. '200 - 500 g flour')"
+        "- If a range is available, show both (e.g. '200 - 500 g flour')\n\n"
+        "IMPORTANT: In step descriptions, NEVER repeat ingredient quantities. "
+        "Use articles instead (le, la, les, l'). "
+        "Quantities are already handled by the ingredient annotations.\n"
+        "- GOOD: 'Mettre l'oignon blanc coupé en deux dans le bol.'\n"
+        "- BAD:  'Mettre 1 oignon blanc coupé en deux dans le Thermomix.'\n"
+        "- GOOD: 'Ajouter l'huile d'olive dans le bol et rissoler.'\n"
+        "- BAD:  'Ajouter 20 grammes d'huile d'olive dans le Thermomix et rissoler.'\n\n"
+        "IMPORTANT: Always say 'dans le bol' (in the bowl), NEVER 'dans le Thermomix'."
     ),
 )
 
